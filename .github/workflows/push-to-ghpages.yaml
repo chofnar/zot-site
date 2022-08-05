@@ -1,0 +1,41 @@
+on:
+  push:
+    branches:
+      - 'main'
+name: build-and-push-ghpages
+
+jobs:
+  build-and-push:
+    name: Build and push to Github Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Set up Next.js
+        run: |
+          npm install
+
+      - name: Build site
+        run: |
+          npm run build
+          npm run export
+          npm run build:images
+          touch out/.nojekyll
+    
+      - name: Push to Github Pages on zot-site-n-docs
+        uses: cpina/github-action-push-to-another-repository@v1.5
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+        with:
+          source-directory: 'out'
+          destination-github-username: 'chofnar'
+          destination-repository-name: 'zot-site-n-docs'
+          user-email: catalin.hofnar@gmail.com
+          target-branch: main
+    
